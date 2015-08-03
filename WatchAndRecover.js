@@ -26,15 +26,15 @@ function listChildren(client, path) {
 
 			if(replSet1 == -1) {
 				mongoLaunch("mongo_primary.js");
-				console.log("Restart mongod replSet... port: 20000);
+				console.log("Restart mongod replSet... port: 20000");
 			}
 			if(replSet2 == -1) {
 				mongoLaunch("mongo_secondary1.js");
-				console.log("Restart mongod replSet... port: 30000);
+				console.log("Restart mongod replSet... port: 30000");
 			}
 			if(replSet3 == -1) {
 				mongoLaunch("mongo_secondary2.js");
-				console.log("Restart mongod replSet... port: 40000);
+				console.log("Restart mongod replSet... port: 40000");
 			}
 		}
 	);

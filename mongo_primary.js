@@ -67,5 +67,5 @@ function _startServer() {
 	function puts(error, stdout, stderr) {sys.puts(stdout)}
 	exec("sudo mongod --replSet Mongo_study --port 20000 --dbpath /data/db/primary", puts);
 }
- 
+
 _startServer();
