@@ -26,13 +26,7 @@ function exists(client, path) {
 					stat.version
 				);
 
-				client.create(path + "/replSet1", new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function(error) {
-					if (error) {
-						console.log('Failed to create node: %s due to: %s.', path + "/replSet1", error);
-					} else {
-						console.log('Node: %s is successfully created.', path + "/replSet1");
-					}
-				});
+				replSet(client, path);
 			} else {
 				client.create('/shard1', function(error) {
 					if (error) {
@@ -42,16 +36,21 @@ function exists(client, path) {
 					}
 				});
 
-				client.create(path + "/replSet1", new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function(error) {
-					if (error) {
-						console.log('Failed to create node: %s due to: %s.', path + "/replSet1", error);
-					} else {
-						console.log('Node: %s is successfully created.', path + "/replSet1");
-					}
-				});
+				replSet(client, path);
 			}
 		}
 	);
+}
+
+function replSet(client, path) {
+	
+	client.create(path + "/replSet1", new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function(error) {
+		if (error) {
+			console.log('Failed to create node: %s due to: %s.', path + "/replSet1", error);
+		} else {
+			console.log('Node: %s is successfully created.', path + "/replSet1");
+		}
+	});
 }
 
 function _startServer() {
@@ -66,8 +65,7 @@ function _startServer() {
 	client.connect();
 
 	function puts(error, stdout, stderr) {sys.puts(stdout)}
-	exec("sudo mongod --replSet Mongo_study --port 20000 --dbpath /data/db/primary", puts, function() {
-	});
+	exec("sudo mongod --replSet Mongo_study --port 20000 --dbpath /data/db/primary", puts);
 }
  
 _startServer();
