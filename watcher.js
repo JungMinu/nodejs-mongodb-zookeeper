@@ -23,52 +23,41 @@ function listChildren(client, path) {
 			var children4 = children.indexOf("arbiter");
 
 			if (children1 == -1) {
-				RecoverMongo (client, "20000", "replSet1", "mongo_replSet1.log");
+				RecoverMongo ("mongo_primary.js", "mongo_replSet1.log");
         console.log("Restart mongod replSet... port: 20000");
 			}
 			if (children2 == -1) {
-				RecoverMongo (client, "30000", "replSet2", "mongo_replSet2.log");
-                y
+				RecoverMongo ("mongo_secondary1.js", "mongo_replSet2.log");
         console.log("Restart mongod replSet... port: 30000");
 			}
 			if (children3 == -1) {
-				RecoverMongo (client, "40000", "replSet3", "mongo_replSet3.log");
+				RecoverMongo ("mongo_secondary2.js", "mongo_replSet3.log");
         console.log("Restart mongod replSet... port: 40000");
 			}
 			if (children4 == -1) {
-				RecoverArbiter (client, "20017", "replSet_Arbiter", "mongo-replSet_Arbiter.log", "arbiter");
+				RecoverArbiter ("mongo-replSet_Arbiter.log");
 	console.log("Restart mongod arbiter... port: 20017");
 			}
 		}
 	);
 }
 
-function RecoverMongo (client, port, dbpath, log) {
+function RecoverMongo (mongo, log) {
     exec("sudo rm /data/db/replSet_Log/" + log + "*", function(err, stdout, stderr) {
         console.log(stdout);
     });
-   	exec("sudo mongod --port " + port + " --dbpath /data/db/" + dbpath + " --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/" + log, function(err, stdout, stderr) {
-            console.log(stdout);
+    exec("sudo node " + mongo, function(err, stdout, stderr) {
+        console.log(stdout);
     });
-    replication(client, dbpath);
 }
 
-function RecoverArbiter (client, port, dbpath, log, replset) {
-    function puts(error, stdout, stderr) {sys.puts(stdout)}
-    exec("sudo rm /data/db/replSet_Log/" + log + "*", puts);
+function RecoverArbiter (log) {
+    exec("sudo rm /data/db/replSet_Log/" + log + "*", function(error, stdout, stderr) {
+        console.log(stdout);
+    });
 
-   	exec("sudo mongod --port " + port + " --dbpath /data/db/" + dbpath + " --replSet Mongo_study --smallfiles --noprealloc --nojournal --logpath /data/db/replSet_Log/" + log, puts);
-    replication(client, replset);
-}
-
-function replication(client, replset) {
-    client.create("/shard1/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (error, path) {
-        if (error) {
-            console.log(error.stack);
-            return;
-        }
-
-        console.log('Node: %s is created.', path);
+   	exec("sudo node mongo_arbiter.js", function(error, stdout, stderr) {
+        console.log(stdout);
     });
 }
 

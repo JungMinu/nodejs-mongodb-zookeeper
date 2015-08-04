@@ -31,7 +31,6 @@ function replication(client, path, replset) {
     client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
-            return;
         } else {
             console.log('Node: %s is successfully created', path + "/" + replset);
         }
@@ -42,7 +41,6 @@ function shard(client, shard) {
     client.create(shard, new Buffer(''), function(err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', shard, err);
-            return;
         } else {
             console.log('Node : %s is successfully created', shard);
         }
@@ -50,18 +48,19 @@ function shard(client, shard) {
 }
 
 function start() {
-
   var client = zookeeper.createClient('localhost:2181');
 
 	client.once('connected', function () {
-    exists(client);
+        exists(client);
 	});
 
 	client.connect();
-
-	exec("sudo mongod --port 20000 --dbpath /data/db/replSet1 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet1.log", function(err, stdout, stderr) {
-		sys.puts(stdout);
-	});
+    function puts(error, stdout, stderr) {
+        console.log(stdout);
+        console.log("disconnect to zkServer");
+        client.close();
+    }
+    exec("mongod --port 20000 --dbpath /data/db/replSet1 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet1.log", puts);
 }
 
 start();

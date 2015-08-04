@@ -14,7 +14,6 @@ function exists(client) {
 		function (error, stat) {
             if (error) {
                 console.log('Failed to check existence of node: %s due to: %s.', path, error);     
-                return;
             }
 
             if(stat) {
@@ -23,6 +22,7 @@ function exists(client) {
                 shard(client, root_shard_path);
                 replication(client, root_shard_path, replSet);
             }
+            return;
         }
     );
 }
@@ -31,10 +31,10 @@ function replication(client, path, replset) {
     client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
-            return;
         } else {
             console.log('Node: %s is successfully created', path + "/" + replset);
         }
+        return;
     });
 }
 
@@ -42,10 +42,10 @@ function shard(client, shard) {
     client.create(shard, new Buffer(''), function(err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', shard, err);
-            return;
         } else {
             console.log('Node : %s is successfully created', shard);
         }
+        return;
     });
 }
 
@@ -54,14 +54,15 @@ function start() {
   var client = zookeeper.createClient('localhost:2181');
 
 	client.once('connected', function () {
-    exists(client);
+        exists(client);
 	});
 
 	client.connect();
 
-	exec("sudo mongod --port 20017 --dbpath /data/db/replSet_Arbiter --replSet Mongo_study --smallfiles --noprealloc --nojournal --logpath /data/db/replSet_Log/mongo-replSet_Arbiter.log", function(err, stdout, stderr) {
-		sys.puts(stdout);
-	});
+    exec("mongod --port 20017 --dbpath /data/db/replSet_Arbiter --replSet Mongo_study --smallfiles --noprealloc --nojournal --logpath /data/db/replSet_Log/mongo-replSet_Arbiter.log", function(err, stdout, stderr) {
+        console.log(stdout);
+        client.close();
+    });
 }
 
 start();
