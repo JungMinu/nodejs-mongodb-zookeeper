@@ -13,7 +13,6 @@ exports.replication = function (client, path, replset) {
     if (err) console.log('Failed to create node : %s due to %s', path + "/" + repleset, err);
     else console.log('Node : %s is successfully created', path + "/" +replset);
   
-    client.close();
   });
 }
 
@@ -24,11 +23,10 @@ exports.replication = function (client, path, replset) {
  * shard : location of shard
  */
 exports.shard = function (client, shard) {
-  client.create(shard, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err) {
+  client.create(shard, new Buffer(''), function (err) {
     if (err) console.log('Failed to create node : %s due to %s', shard, err);
     else console.log('Node : %s is successfully created', shard);
   
-    client.close();
   });
 }
 
