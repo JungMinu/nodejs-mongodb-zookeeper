@@ -28,7 +28,7 @@ function exists(client) {
 	);
 }
 
-exports.start = function () {
+function start() {
 
   var client = zookeeper.createClient('localhost:2181');
 
@@ -38,7 +38,9 @@ exports.start = function () {
 
 	client.connect();
 
-	exec("sudo screen -S mongo_replSet-Arbiter sudo mongod --port 20017 --dbpath /data/db/replSet_Arbiter --replSet Mongo_study --smallfiles --noprealloc --nojournal --logpath /data/db/replSet_Log/mongo-replSet_Arbiter.log", function (err, stdout, stderr) {
+	exec("sudo mongod --port 20017 --dbpath /data/db/replSet_Arbiter --replSet Mongo_study --smallfiles --noprealloc --nojournal --logpath /data/db/replSet_Log/mongo-replSet_Arbiter.log", function (err, stdout, stderr) {
 		sys.puts(stdout);
 	});
 }
+
+start();

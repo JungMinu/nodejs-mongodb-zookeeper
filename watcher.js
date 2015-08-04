@@ -14,9 +14,15 @@ function listChildren(client) {
 		root_shard_path,
 		function (event) {
 			console.log('Got watcher event: %s', event);
+			listChildren(client, root_shard_path);
 		},
 		function (error, children, stat) {
-			if (error) console.log('Failed to list children of : %s.', error);
+			if (error) {
+				console.log('Failed to list children of : %s.', error);
+				return;
+			}
+
+			console.log('Children of %s are: %j.', root_shard_path, children);
 
 			var children1 = children.indexOf("replSet1");
 			var children2 = children.indexOf("replSet2");
@@ -49,7 +55,7 @@ function WatchAndRecover(client, path) {
 	}, 3000);
 }
 
-exports.start = function () {
+function start() {
 
 	var client = zookeeper.createClient('localhost:2181');
 
@@ -60,3 +66,5 @@ exports.start = function () {
 
 	client.connect();
 }
+
+start();

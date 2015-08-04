@@ -28,7 +28,7 @@ function exists(client) {
 	);
 }
 
-exports.start = function () {
+function start() {
 
   var client = zookeeper.createClient('localhost:2181');
 
@@ -38,7 +38,9 @@ exports.start = function () {
 
 	client.connect();
 
-	exec("sudo screen -S replSet1 sudo mongod --port 30000 --dbpath /data/db/replSet1 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet2.log", function(err, stdout, stderr) {
+	exec("sudo mongod --port 30000 --dbpath /data/db/replSet2 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet2.log", function(err, stdout, stderr) {
 		sys.puts(stdout);
 	});
 }
+
+start();
