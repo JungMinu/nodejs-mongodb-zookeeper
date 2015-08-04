@@ -8,6 +8,6 @@ var watcher = require("./watcher");
 replSet1.start();
 replSet2.start();
 replSet3.start();
-//arbiter.start();
+arbiter.start();
 
 watcher.start();
