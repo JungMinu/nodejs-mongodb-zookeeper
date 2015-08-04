@@ -1,5 +1,8 @@
 # nodejs-mongodb-zookeeper
 
+### Launch primary server
+1. "node app.js"
+
 ### 사용법
 1. "node mongo_primary.js"
 2. "node mongo_secondary1.js"
