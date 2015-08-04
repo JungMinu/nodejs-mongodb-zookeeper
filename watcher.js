@@ -46,9 +46,12 @@ function RecoverMongo (mongo, log) {
     exec("sudo rm /data/db/replSet_Log/" + log + "*", function(err, stdout, stderr) {
         console.log(stdout);
     });
-    exec("sudo node " + mongo, function(err, stdout, stderr) {
-        console.log(stdout);
-    });
+
+    setTimeout(function() {
+        exec("sudo node " + mongo, function(err, stdout, stderr) {
+            console.log(stdout);
+        })
+    }, 1000);
 }
 
 function RecoverArbiter (log) {
@@ -56,9 +59,11 @@ function RecoverArbiter (log) {
         console.log(stdout);
     });
 
-   	exec("sudo node mongo_arbiter.js", function(error, stdout, stderr) {
-        console.log(stdout);
-    });
+    setTimeout(function() {
+       	exec("sudo node mongo_arbiter.js", function(error, stdout, stderr) {
+            console.log(stdout);
+        })
+    }, 1000);
 }
 
 function WatchAndRecover(client, path) {
