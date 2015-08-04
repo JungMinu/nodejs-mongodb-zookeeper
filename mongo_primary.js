@@ -55,12 +55,11 @@ function start() {
 	});
 
 	client.connect();
-    function puts(error, stdout, stderr) {
+
+    exec("mongod --port 20000 --dbpath /data/db/replSet1 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet1.log", function(error, stdout, stderr) {
         console.log(stdout);
-        console.log("disconnect to zkServer");
         client.close();
-    }
-    exec("mongod --port 20000 --dbpath /data/db/replSet1 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet1.log", puts);
+    });
 }
 
 start();
