@@ -10,12 +10,20 @@ function exists(client) {
   client.exists(root_shard_path,
 		function (event) {
       console.log('Got event: %s.', event);
+			exists(client, path);
 		},
 		function (error, stat) {
-      if (error) console.log('Failed to check existence of node: %s due to: %s.', path, error);     
-      
+      if (error) {
+	console.log('Failed to check existence of node: %s due to: %s.', path, error);     
+	return;
+      }
+
+	if(stat) {
+		util.replication(client, root_shard_path, replSet);
+	} else {
       util.shard(client, root_shard_path);
 		  util.replication(client, root_shard_path, replSet);
+	}
     }
 	);
 }
@@ -30,7 +38,7 @@ exports.start = function () {
 
 	client.connect();
 
-	exec("sudo mongod --replSet Mongo_study --port 20000 --dbpath /data/db/primary", function (err, stdout, stderr) {
-    sys.puts(stdout);
-  });
+	exec("sudo screen -S replSet1 sudo mongod --port 20000 --dbpath /data/db/replSet1 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet1.log", function(err, stdout, stderr) {
+		sys.puts(stdout);
+	});
 }

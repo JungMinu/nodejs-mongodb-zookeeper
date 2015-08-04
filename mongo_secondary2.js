@@ -30,7 +30,7 @@ exports.start = function () {
 	client.connect();
 
 	function puts(error, stdout, stderr) {sys.puts(stdout)}
-	exec("sudo mongod --replSet Mongo_study --port 40000 --dbpath /data/db/secondary2", function (err, stdout, stderr) {
-    sys.puts(stdout);
-  });
+	exec("sudo screen -S mongo_replSet3 sudo mongod --port 40000 --dbpath /data/db/replSet3 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet3.log", function (err, stdout, stderr) {
+		sys.puts(stdout);
+	});
 }
