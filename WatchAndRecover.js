@@ -2,6 +2,8 @@ var sys = require('sys');
 var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
 
+var primary = require("mongo_primary");
+
 function listChildren(client, path) {
 	client.getChildren(
 		path,
@@ -25,8 +27,8 @@ function listChildren(client, path) {
 			var replSet3 = children.indexOf("replSet3");
 
 			if(replSet1 == -1) {
-				mongoLaunch("mongo_primary.js");
-				console.log("Restart mongod replSet... port: 20000");
+				priamry.start();
+        console.log("Restart mongod replSet... port: 20000");
 			}
 			if(replSet2 == -1) {
 				mongoLaunch("mongo_secondary1.js");

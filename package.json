@@ -2,7 +2,8 @@
   "name" : "nodejs-mongodb-zookeeper",
   "version" : "0.0.1",
   "dependencies" : {
-    "node-zookeeper-client" : "*"
+    "node-zookeeper-client" : "*",
+    "async" : "*"
   }
 
 }
