@@ -1,6 +1,7 @@
 var sys = require('sys')
 var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
+var dbUtil = require('./utils');
 
 function exists(client, path) {
 	client.exists(path,
@@ -32,7 +33,7 @@ function replSet(client, path) {
 
 function shardSet(client) {
   client.create("/shard1", new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err) {
-    if (err) console.log("Failed to create node : %s due to %s", path + "/shard1", error);
+    if (err) console.log("Failed to create node : %s due to %s", path + "/shard1", err);
     else console.log("Node: %s is successfully created.", path + "/shard1")
   
     client.close();
