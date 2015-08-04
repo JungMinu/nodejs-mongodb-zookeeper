@@ -1,7 +1,6 @@
 var sys = require('sys')
 var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
-var util = require('./utils');
 
 var root_shard_path = "/shard1";
 var replSet = "replSet3"
@@ -9,23 +8,45 @@ var replSet = "replSet3"
 function exists(client) {	
   client.exists(root_shard_path,
 		function (event) {
-      console.log('Got event: %s.', event);
-			exists(client, path);
+            console.log('Got event: %s.', event);
+            exists(client, path);
 		},
 		function (error, stat) {
-      if (error) {
-	console.log('Failed to check existence of node: %s due to: %s.', path, error);     
-	return;
-      }
+            if (error) {
+                console.log('Failed to check existence of node: %s due to: %s.', path, error);     
+                return;
+            }
 
-	if(stat) {
-		util.replication(client, root_shard_path, replSet);
-	} else {
-      util.shard(client, root_shard_path);
-		  util.replication(client, root_shard_path, replSet);
-	}
-    }
-	);
+            if(stat) {
+                replication(client, root_shard_path, replSet);
+            } else {
+                shard(client, root_shard_path);
+                replication(client, root_shard_path, replSet);
+            }
+        }
+    );
+}
+
+function replication(client, path, replset) {
+    client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
+        if (err) {
+            console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
+            return;
+        } else {
+            console.log('Node: %s is successfully created', path + "/" + replset);
+        }
+    });
+}
+
+function shard(client, shard) {
+    client.create(shard, new Buffer(''), function(err, path) {
+        if (err) {
+            console.log('Failed to create node : %s due to %s', shard, err);
+            return;
+        } else {
+            console.log('Node : %s is successfully created', shard);
+        }
+    });
 }
 
 function start() {
