@@ -17,18 +17,18 @@ function exists(client) {
             }
 
             if(stat) {
-                replication(client, root_shard_path, replSet);
+                replication(client);
             } else {
-                shard(client, root_shard_path);
-                replication(client, root_shard_path, replSet);
+                shard(client);
+                replication(client);
             }
             return;
         }
     );
 }
 
-function replication(client, path, replset) {
-    client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
+function replication(client) {
+    client.create(root_shard_path + "/" + replSet, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', path);
         } else {
@@ -37,8 +37,8 @@ function replication(client, path, replset) {
     });
 }
 
-function shard(client, shard) {
-    client.create(shard, new Buffer(''), function(err, path) {
+function shard(client) {
+    client.create(root_shard_path, new Buffer(''), function(err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', shard, err);
         } else {

@@ -48,7 +48,7 @@ function listChildren(client, path) {
                 },
                 function asyncFunction4(cb) {
 			        if (children4 == -1) {
-				        RecoverMongo ("20017", "arbiter", "mongo-replSet_Arbiter.log");
+				        RecoverMongo ("20017", "mongo_arbiter", "mongo-replSet_Arbiter.log");
 	                    console.log("Restart mongod arbiter... port: 20017");
 			        }
                     cb(null, 'asyncFunction4');
@@ -68,12 +68,23 @@ function RecoverMongo (port, mongo, log) {
             cb(null, 'log');
         },
         function asyncFunction2(cb) {
-            if (mongo == "arbiter") {
-                arbiter.start();
+            if (mongo == "mongo_arbiter") {
+                async.series([
+                    function asyncFunction1(cb) {
+                        exec("sudo rm /data/db/replSet_Arbiter/*", function(err, stdout, stderr) {
+                            console.log(stdout);
+                        });
+                        cb(null, 'log');
+                    },
+                    function aysncFunction2(cb) {
+                        arbiter.start();
+                        cb(null, 'arbiter');
+                    }
+                ], function done(error, results) {
+                });
             } else {
                 replSet.start(port, mongo);
             }
-
             cb(null, 'mongod');
         }
     ], function done(error, results) {
