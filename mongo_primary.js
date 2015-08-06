@@ -9,7 +9,6 @@ function exists(client) {
   client.exists(root_shard_path,
 		function (event) {
             console.log('Got event: %s.', event);
-            exists(client, path);
 		},
 		function (error, stat) {
             if (error) {
@@ -23,6 +22,7 @@ function exists(client) {
                 shard(client, root_shard_path);
                 replication(client, root_shard_path, replSet);
             }
+            return;
         }
     );
 }
@@ -30,9 +30,9 @@ function exists(client) {
 function replication(client, path, replset) {
     client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
         if (err) {
-            console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
+            console.log('Failed to create node : %s due to %s', path);
         } else {
-            console.log('Node: %s is successfully created', path + "/" + replset);
+            console.log('Node : %s is successfully created', path);
         }
     });
 }

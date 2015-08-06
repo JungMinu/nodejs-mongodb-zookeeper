@@ -7,7 +7,6 @@ function listChildren(client, path) {
 		path,
 		function (event) {
 			console.log('Got watcher event: %s', event);
-			listChildren(client, path);
 		},
 		function (error, children, stat) {
 			if (error) {

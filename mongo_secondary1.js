@@ -9,11 +9,11 @@ function exists(client) {
   client.exists(root_shard_path,
 		function (event) {
             console.log('Got event: %s.', event);
-            exists(client, path);
 		},
 		function (error, stat) {
             if (error) {
                 console.log('Failed to check existence of node: %s due to: %s.', path, error);     
+                return;
             }
 
             if(stat) {
@@ -30,11 +30,10 @@ function exists(client) {
 function replication(client, path, replset) {
     client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
         if (err) {
-            console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
+            console.log('Failed to create node : %s due to %s', path);
         } else {
-            console.log('Node: %s is successfully created', path + "/" + replset);
+            console.log('Node : %s is successfully created', path);
         }
-        return;
     });
 }
 
@@ -45,24 +44,22 @@ function shard(client, shard) {
         } else {
             console.log('Node : %s is successfully created', shard);
         }
-        return;
     });
 }
 
 function start() {
-
   var client = zookeeper.createClient('localhost:2181');
 
 	client.once('connected', function () {
-    exists(client);
+        exists(client);
 	});
 
 	client.connect();
 
-   	exec("mongod --port 30000 --dbpath /data/db/replSet2 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet2.log", function(err, stdout, stderr) {
-   		sys.puts(stdout);
-        client.close()
-   	});
+    exec("mongod --port 30000 --dbpath /data/db/replSet2 --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet2.log", function(error, stdout, stderr) {
+        console.log(stdout);
+        client.close();
+    });
 }
 
 start();
