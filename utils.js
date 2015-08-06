@@ -9,8 +9,10 @@ var zookeeper = require('node-zookeeper-client');
  * replset : name of replication set 
  */
 exports.replication = function (client, path, replset) {
-  client.create(path + "/"+ replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err) {
-    if (err) console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
+  client.create(path + "/"+ replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
+    if (err) { console.log('Failed to create node : %s due to %s', path + "/" + replset, err);
+	return;
+    }
     else console.log('Node : %s is successfully created', path + "/" +replset);
   
   });
@@ -23,8 +25,10 @@ exports.replication = function (client, path, replset) {
  * shard : location of shard
  */
 exports.shard = function (client, shard) {
-  client.create(shard, new Buffer(''), function (err) {
-    if (err) console.log('Failed to create node : %s due to %s', shard, err);
+  client.create(shard, new Buffer(''), function (err, path) {
+    if (err) { console.log('Failed to create node : %s due to %s', shard, err);
+	return;
+    }
     else console.log('Node : %s is successfully created', shard);
   
   });
