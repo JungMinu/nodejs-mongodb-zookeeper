@@ -1,4 +1,5 @@
-var sys = require('sys')
+var async = require('async');
+var sys = require('sys');
 var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
 
@@ -44,32 +45,60 @@ function shard(client, zkroot_shard_path) {
     });
 }
 
-function Mongod_replSet(client, port, replSet) {
-    exec("mongod --port " + port + " --dbpath /data/db/" + replSet + " --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_" + replSet + ".log", function(error, stdout, stderr) {
-        console.log(stdout);
-        client.close();
+function Mongod_replSet(client, port, replSet, log, config, replSetPath) {
+    var MongoLogPath = config.MongoLogPath;
+
+    async.series([
+        function asyncMvLog(cb) {
+            exec("sudo mv " + MongoLogPath + log + " " + MongoLogPath + log + "." + new Date(), function(err, stdout, stderr) {
+                console.log(stdout);
+            });
+            cb(null, 'MvLog');
+        },
+        function asyncLaunchMongod(cb) {
+            exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --oplogSize " + config.OpLogSize + " --logpath " + MongoLogPath + log, function(error, stdout, stderr) {
+                console.log(stdout);
+                client.close();
+            });
+            cb(null, 'LaunchMongod');
+        }
+    ], function done(error, results) {
     });
 }
 
-function Mongod_arbiter(client, port, replSet) {
-    exec("mongod --port " + port + " --dbpath /data/db/replSet_" + replSet + " --replSet Mongo_study --smallfiles --noprealloc --nojournal --logpath /data/db/replSet_Log/mongo-replSet_" + replSet + ".log", function(error, stdout, stderr) {
-        console.log(stdout);
-        client.close();
+function Mongod_arbiter(client, port, replSet, log, config, replSetPath) {
+    var MongoLogPath = config.MongoLogPath;
+
+    async.series([
+        function asyncMvLog(cb) {
+            exec("sudo mv " + MongoLogPath + log + " " + MongoLogPath + log + "." + new Date(), function(err, stdout, stderr) {
+                console.log(stdout);
+            });
+            cb(null, 'MvLog');
+        },
+        function asyncLaunchMongod(cb) {
+            exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --noprealloc --nojournal --logpath " + MongoLogPath + log, function(error, stdout, stderr) {
+                console.log(stdout);
+                client.close();
+            });
+            cb(null, 'LaunchMongod');
+        }
+    ], function done(error, results) {
     });
 }
 
-exports.start = function(port, replSet, config, zkroot_shard_path) {
-  var client = zookeeper.createClient('localhost:2181');
+exports.start = function(port, replSet, log, config, replSetPath) {
+  var client = zookeeper.createClient(config.zkServer);
 
 	client.once('connected', function () {
-        exists(client, replSet, zkroot_shard_path);
+        exists(client, replSet, config.zkRootShardPath);
 	});
 
 	client.connect();
 
     if (replSet == config.arbiterName) {
-        Mongod_arbiter(client, port, replSet);
+        Mongod_arbiter(client, port, replSet, log, config, replSetPath);
     } else {
-        Mongod_replSet(client, port, replSet);
+        Mongod_replSet(client, port, replSet, log, config, replSetPath);
     }
 }

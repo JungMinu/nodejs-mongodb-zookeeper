@@ -1,4 +1,8 @@
 {
+    "MongoReplSetName": "Mongo_study",
+    "MongoLogPath": "/data/db/replSet_Log/",
+    "OpLogSize": "128",
+
     "replSet1Port": "20000",
     "replSet2Port": "30000",
     "replSet3Port": "40000",
@@ -8,6 +12,16 @@
     "replSet2Name": "replSet2",
     "replSet3Name": "replSet3",
     "arbiterName": "Arbiter",
+
+    "replSet1Log": "mongo_replSet1.log",
+    "replSet2Log": "mongo_replSet2.log",
+    "replSet3Log": "mongo_replSet3.log",
+    "arbiterLog": "mongo-replSet_Arbiter.log",
+
+    "replSet1Path": "/data/db/replSet1/",
+    "replSet2Path": "/data/db/replSet2/",
+    "replSet3Path": "/data/db/replSet3/",
+    "arbiterPath": "/data/db/replSet_Arbiter/",
 
     "zkServer": "localhost:2181",
     "zkRootShardPath": "/shard1"
