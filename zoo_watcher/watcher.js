@@ -4,7 +4,6 @@ var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
 
 var replSet = require('./../mongo/mongo_replSet');
-var arbiter = require('./../mongo/mongo_arbiter');
 
 function listChildren(client, config, zkroot_shard_path) {
     var replSet1Name = config.replSet1Name;
@@ -37,28 +36,28 @@ function listChildren(client, config, zkroot_shard_path) {
             async.series([
                 function asyncMongoRecover1(cb) {
 			        if (zoo_shard1_replSet1 == -1) {
-				        RecoverMongo (replSet1Port, replSet1Name, "mongo_replSet1.log", zkroot_shard_path);
+				        RecoverMongo (replSet1Port, replSet1Name, "mongo_replSet1.log", config, zkroot_shard_path);
                         console.log("Restart mongod replSet... port: ", replSet1Port);
 			        }
                     cb(null, 'asyncMongoRecover1');
                 },
                 function asyncMongoRecover2(cb) {
 			        if (zoo_shard1_replSet2 == -1) {
-				        RecoverMongo (replSet2Port, replSet2Name, "mongo_replSet2.log", zkroot_shard_path);
+				        RecoverMongo (replSet2Port, replSet2Name, "mongo_replSet2.log", config, zkroot_shard_path);
                         console.log("Restart mongod replSet... port: " + replSet2Port);
 			        }
                     cb(null, 'asyncMongoRecover2');
                 },
                 function asyncMongoRecover3(cb) {
 			        if (zoo_shard1_replSet3 == -1) {
-				        RecoverMongo (replSet3Port, replSet3Name, "mongo_replSet3.log", zkroot_shard_path);
+				        RecoverMongo (replSet3Port, replSet3Name, "mongo_replSet3.log", config, zkroot_shard_path);
                         console.log("Restart mongod replSet... port: " + replSet3Port);
 			        }
                     cb(null, 'asyncMongoRecover3');
                 },
                 function asyncArbiterRecover(cb) {
 			        if (zoo_shard1_arbiter == -1) {
-				        RecoverMongo (arbiterPort, arbiterName, "mongo-replSet_Arbiter.log", zkroot_shard_path);
+				        RecoverMongo (arbiterPort, arbiterName, "mongo-replSet_Arbiter.log", config, zkroot_shard_path);
 	                    console.log("Restart mongod arbiter... port: " + arbiterPort);
 			        }
                     cb(null, 'asyncArbiterRecover');
@@ -69,7 +68,7 @@ function listChildren(client, config, zkroot_shard_path) {
 	);
 }
 
-function RecoverMongo (port, mongo, log, zkroot_shard_path) {
+function RecoverMongo (port, mongo, log, config, zkroot_shard_path) {
     async.series([
             function asyncRmLog(cb) {
                 exec("sudo rm /data/db/replSet_Log/" + log + "*", function(err, stdout, stderr) {
@@ -78,7 +77,7 @@ function RecoverMongo (port, mongo, log, zkroot_shard_path) {
                 cb(null, 'RmLog');
             },
             function asyncRecoverMongo(cb) {
-                if (mongo == "arbiter") {
+                if (mongo == config.arbiterName) {
                     async.series([
                         function asyncRmSetting(cb) {
                             exec("sudo rm /data/db/replSet_Arbiter/*", function(err, stdout, stderr) {
@@ -87,13 +86,13 @@ function RecoverMongo (port, mongo, log, zkroot_shard_path) {
                             cb(null, 'RmSetting');
                         },
                         function aysncRecoverArbiter(cb) {
-                            arbiter.start();
+                            replSet.start(port, mongo, config, zkroot_shard_path);
                             cb(null, 'arbiter');
                         }
                     ], function done(error, results) {
                     });
                 } else {
-                    replSet.start(port, mongo, zkroot_shard_path);
+                    replSet.start(port, mongo, config, zkroot_shard_path);
                 }
                 cb(null, 'RecoverMongo');
             }

@@ -7,7 +7,7 @@
     "replSet1Name": "replSet1",
     "replSet2Name": "replSet2",
     "replSet3Name": "replSet3",
-    "arbiterName": "arbiter",
+    "arbiterName": "Arbiter",
 
     "zkServer": "localhost:2181",
     "zkRootShardPath": "/shard1"
