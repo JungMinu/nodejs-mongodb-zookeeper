@@ -6,12 +6,22 @@ var zookeeper = require('node-zookeeper-client');
 var replSet = require('./../mongo/mongo_replSet');
 var arbiter = require('./../mongo/mongo_arbiter');
 
-function listChildren(client, path) {
+function listChildren(client, config, zkroot_shard_path) {
+    var replSet1Name = config.replSet1Name;
+    var replSet2Name = config.replSet2Name;
+    var replSet3Name = config.replSet3Name;
+    var arbiterName = config.arbiterName;
+
+    var replSet1Port = config.replSet1Port;
+    var replSet2Port = config.replSet2Port;
+    var replSet3Port = config.replSet3Port;
+    var arbiterPort = config.arbiterPort;
+
 	client.getChildren(
-		path,
+		zkroot_shard_path,
 		function (event) {
 			console.log('Got watcher event: %s', event);
-            listChildren(client, path);
+            listChildren(client, config, zkroot_shard_path);
 		},
 		function (error, children, stat) {
 			if (error) {
@@ -19,39 +29,39 @@ function listChildren(client, path) {
 				return;
 			}
 
-			var children1 = children.indexOf("replSet1");
-			var children2 = children.indexOf("replSet2");
-			var children3 = children.indexOf("replSet3");
-			var children4 = children.indexOf("arbiter");
+			var zoo_shard1_replSet1 = children.indexOf(replSet1Name);
+			var zoo_shard1_replSet2 = children.indexOf(replSet2Name);
+			var zoo_shard1_replSet3 = children.indexOf(replSet3Name);
+			var zoo_shard1_arbiter = children.indexOf(arbiterName);
 
             async.series([
-                function asyncFunction1(cb) {
-			        if (children1 == -1) {
-				        RecoverMongo ("20000", "replSet1", "mongo_replSet1.log");
-                        console.log("Restart mongod replSet... port: 20000");
+                function asyncMongoRecover1(cb) {
+			        if (zoo_shard1_replSet1 == -1) {
+				        RecoverMongo (replSet1Port, replSet1Name, "mongo_replSet1.log", zkroot_shard_path);
+                        console.log("Restart mongod replSet... port: ", replSet1Port);
 			        }
-                    cb(null, 'asyncFunction1');
+                    cb(null, 'asyncMongoRecover1');
                 },
-                function asyncFunction2(cb) {
-			        if (children2 == -1) {
-				        RecoverMongo ("30000", "replSet2", "mongo_replSet2.log");
-                        console.log("Restart mongod replSet... port: 30000");
+                function asyncMongoRecover2(cb) {
+			        if (zoo_shard1_replSet2 == -1) {
+				        RecoverMongo (replSet2Port, replSet2Name, "mongo_replSet2.log", zkroot_shard_path);
+                        console.log("Restart mongod replSet... port: " + replSet2Port);
 			        }
-                    cb(null, 'asyncFunction2');
+                    cb(null, 'asyncMongoRecover2');
                 },
-                function asyncFunction3(cb) {
-			        if (children3 == -1) {
-				        RecoverMongo ("40000", "replSet3", "mongo_replSet3.log");
-                        console.log("Restart mongod replSet... port: 40000");
+                function asyncMongoRecover3(cb) {
+			        if (zoo_shard1_replSet3 == -1) {
+				        RecoverMongo (replSet3Port, replSet3Name, "mongo_replSet3.log", zkroot_shard_path);
+                        console.log("Restart mongod replSet... port: " + replSet3Port);
 			        }
-                    cb(null, 'asyncFunction3');
+                    cb(null, 'asyncMongoRecover3');
                 },
-                function asyncFunction4(cb) {
-			        if (children4 == -1) {
-				        RecoverMongo ("20017", "mongo_arbiter", "mongo-replSet_Arbiter.log");
-	                    console.log("Restart mongod arbiter... port: 20017");
+                function asyncArbiterRecover(cb) {
+			        if (zoo_shard1_arbiter == -1) {
+				        RecoverMongo (arbiterPort, arbiterName, "mongo-replSet_Arbiter.log", zkroot_shard_path);
+	                    console.log("Restart mongod arbiter... port: " + arbiterPort);
 			        }
-                    cb(null, 'asyncFunction4');
+                    cb(null, 'asyncArbiterRecover');
                 }
             ], function done(error, results) {
             });
@@ -59,53 +69,51 @@ function listChildren(client, path) {
 	);
 }
 
-function RecoverMongo (port, mongo, log) {
+function RecoverMongo (port, mongo, log, zkroot_shard_path) {
     async.series([
-        function asyncFunction1(cb) {
-            exec("sudo rm /data/db/replSet_Log/" + log + "*", function(err, stdout, stderr) {
-                console.log(stdout);
-            });
-            cb(null, 'log');
-        },
-        function asyncFunction2(cb) {
-            if (mongo == "mongo_arbiter") {
-                async.series([
-                    function asyncFunction1(cb) {
-                        exec("sudo rm /data/db/replSet_Arbiter/*", function(err, stdout, stderr) {
-                            console.log(stdout);
-                        });
-                        cb(null, 'log');
-                    },
-                    function aysncFunction2(cb) {
-                        arbiter.start();
-                        cb(null, 'arbiter');
-                    }
-                ], function done(error, results) {
+            function asyncRmLog(cb) {
+                exec("sudo rm /data/db/replSet_Log/" + log + "*", function(err, stdout, stderr) {
+                    console.log(stdout);
                 });
-            } else {
-                replSet.start(port, mongo);
+                cb(null, 'RmLog');
+            },
+            function asyncRecoverMongo(cb) {
+                if (mongo == "arbiter") {
+                    async.series([
+                        function asyncRmSetting(cb) {
+                            exec("sudo rm /data/db/replSet_Arbiter/*", function(err, stdout, stderr) {
+                                console.log(stdout);
+                            });
+                            cb(null, 'RmSetting');
+                        },
+                        function aysncRecoverArbiter(cb) {
+                            arbiter.start();
+                            cb(null, 'arbiter');
+                        }
+                    ], function done(error, results) {
+                    });
+                } else {
+                    replSet.start(port, mongo, zkroot_shard_path);
+                }
+                cb(null, 'RecoverMongo');
             }
-            cb(null, 'mongod');
-        }
-    ], function done(error, results) {
-        console.log('error: ', error);
-        console.log('Successfully recover mongod');
+        ], function done(error, results) {
     });
+}     
+
+function WatchAndRecover(client, config, zkroot_shard_path) {
+	listChildren(client, config, zkroot_shard_path)
 }
 
-function WatchAndRecover(client, path) {
-	listChildren(client, path)
-}
-
-exports.start = function() {
+exports.start = function(config, zkroot_shard_path) {
 
     console.log('Zookeeper_Watcher operate');
-	var client = zookeeper.createClient('localhost:2181');
+	var client = zookeeper.createClient(config.zkServer);
 
 	client.once('connected', function () {
 		console.log('Connected to ZooKeeper.');
         setTimeout(function() {
-		    WatchAndRecover(client, "/shard1");
+		    WatchAndRecover(client, config, zkroot_shard_path);
         }, 10);
 	});
 

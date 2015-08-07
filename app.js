@@ -1,29 +1,33 @@
 var async = require('async');
-var replSet = require("./mongo/mongo_replSet");
-var arbiter = require("./mongo/mongo_arbiter");
 
-var watcher = require("./zoo_watcher/watcher");
+var gk = require("./common");
+var config = gk.config;
+var replSet = gk.replSet;
+var arbiter = gk.arbiter;
+var watcher = gk.watcher;
+
+var zkroot_shard_path = config.zkRootShardPath;
 
 async.series([    
-    function asyncFunction1(cb) {
-        replSet.start("20000", "replSet1");
+    function asyncMongoStart1(cb) {
+        replSet.start(config.replSet1Port, config.replSet1Name, zkroot_shard_path);
         cb(null, 'mongod_replSet1');
     },
-    function asyncFunction2(cb) {
-        replSet.start("30000", "replSet2");
+    function asyncMongoStart2(cb) {
+        replSet.start(config.replSet2Port, config.replSet2Name, zkroot_shard_path);
         cb(null, 'mongod_replSet2');
     },
-    function asyncFunction3(cb) {
-        replSet.start("40000", "replSet3");
+    function asyncMongoStart3(cb) {
+        replSet.start(config.replSet3Port, config.replSet3Name, zkroot_shard_path);
         cb(null, 'mongod_replSet3');
     },
-    function asyncFunction4(cb) {
+    function asyncMongoStart4(cb) {
         arbiter.start();
         cb(null, 'mongod_arbiter');
     }
 ], function done(error, results) {
     console.log('error: ', error);
     console.log('mongod start: ', results);
-    watcher.start();
+    watcher.start(config, zkroot_shard_path);
     console.log('Watcher Start');
 });

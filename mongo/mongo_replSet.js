@@ -2,9 +2,7 @@ var sys = require('sys')
 var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
 
-var root_shard_path = "/shard1";
-
-function exists(client, replSet) {	
+function exists(client, replSet, root_shard_path) {	
   client.exists(root_shard_path,
 		function (event) {
             console.log('Got event: %s.', event);
@@ -16,18 +14,18 @@ function exists(client, replSet) {
             }
 
             if(stat) {
-                replication(client, root_shard_path, replSet);
+                replication(client, replSet, root_shard_path);
             } else {
                 shard(client, root_shard_path);
-                replication(client, root_shard_path, replSet);
+                replication(client, replSet, root_shard_path);
             }
             return;
         }
     );
 }
 
-function replication(client, path, replset) {
-    client.create(path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
+function replication(client, replset, root_shard_path) {
+    client.create(root_shard_path + "/" + replset, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', path);
         } else {
@@ -36,8 +34,8 @@ function replication(client, path, replset) {
     });
 }
 
-function shard(client, shard) {
-    client.create(shard, new Buffer(''), function(err, path) {
+function shard(client, root_shard_path) {
+    client.create(root_shard_path, new Buffer(''), function(err, path) {
         if (err) {
             console.log('Failed to create node : %s due to %s', shard, err);
         } else {
@@ -46,11 +44,11 @@ function shard(client, shard) {
     });
 }
 
-exports.start = function(port, replSet) {
+exports.start = function(port, replSet, root_shard_path) {
   var client = zookeeper.createClient('localhost:2181');
 
 	client.once('connected', function () {
-        exists(client, replSet);
+        exists(client, replSet, root_shard_path);
 	});
 
 	client.connect();

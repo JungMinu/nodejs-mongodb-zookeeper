@@ -1,0 +1,14 @@
+{
+    "replSet1Port": "20000",
+    "replSet2Port": "30000",
+    "replSet3Port": "40000",
+    "arbiterPort": "20017",
+
+    "replSet1Name": "replSet1",
+    "replSet2Name": "replSet2",
+    "replSet3Name": "replSet3",
+    "arbiterName": "arbiter",
+
+    "zkServer": "localhost:2181",
+    "zkRootShardPath": "/shard1"
+}
