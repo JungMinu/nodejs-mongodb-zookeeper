@@ -46,49 +46,22 @@ function shard(client, zkroot_shard_path) {
 }
 
 function Mongod_replSet(client, port, replSet, log, config, replSetPath) {
-    var MongoLogPath = config.MongoLogPath;
-
-    async.series([
-        function asyncMvLog(cb) {
-            exec("sudo mv " + MongoLogPath + log + " " + MongoLogPath + log + "." + new Date(), function(err, stdout, stderr) {
-                console.log(stdout);
-            });
-            cb(null, 'MvLog');
-        },
-        function asyncLaunchMongod(cb) {
-            exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --oplogSize " + config.OpLogSize + " --logpath " + MongoLogPath + log, function(error, stdout, stderr) {
-                console.log(stdout);
-                client.close();
-            });
-            cb(null, 'LaunchMongod');
-        }
-    ], function done(error, results) {
+    exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --oplogSize " + config.OpLogSize + " --logpath " + log, function(error, stdout, stderr) {
+        console.log(stdout);
+        client.close();
     });
 }
 
 function Mongod_arbiter(client, port, replSet, log, config, replSetPath) {
-    var MongoLogPath = config.MongoLogPath;
-
-    async.series([
-        function asyncMvLog(cb) {
-            exec("sudo mv " + MongoLogPath + log + " " + MongoLogPath + log + "." + new Date(), function(err, stdout, stderr) {
-                console.log(stdout);
-            });
-            cb(null, 'MvLog');
-        },
-        function asyncLaunchMongod(cb) {
-            exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --noprealloc --nojournal --logpath " + MongoLogPath + log, function(error, stdout, stderr) {
-                console.log(stdout);
-                client.close();
-            });
-            cb(null, 'LaunchMongod');
-        }
-    ], function done(error, results) {
+    exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --noprealloc --nojournal --logpath " + log, function(error, stdout, stderr) {
+        console.log(stdout);
+        client.close();
     });
 }
 
 exports.start = function(port, replSet, log, config, replSetPath) {
-  var client = zookeeper.createClient(config.zkServer);
+    var client = zookeeper.createClient(config.zkServer);
+    var MongoLogPath = config.MongoLogPath;
 
 	client.once('connected', function () {
         exists(client, replSet, config.zkRootShardPath);
@@ -96,9 +69,34 @@ exports.start = function(port, replSet, log, config, replSetPath) {
 
 	client.connect();
 
-    if (replSet == config.arbiterName) {
-        Mongod_arbiter(client, port, replSet, log, config, replSetPath);
-    } else {
-        Mongod_replSet(client, port, replSet, log, config, replSetPath);
-    }
+    async.series([
+        function asyncMvLog(cb) {
+            exec("sudo mv " + MongoLogPath + log + " " + MongoLogPath + log + "." + new Date(), function(err, stdout, stderr) {
+                console.log(stdout);
+            });
+            cb(null, 'MvLog');
+        },
+        function asyncLaunchMongo(cb) {
+            log = MongoLogPath + log;
+            if (replSet == config.arbiterName) {
+                async.series([
+                    function asyncRmSetting(cb) {
+                        exec("sudo rm /data/db/replSet_Arbiter/*", function(err, stdout, stderr) {
+                            console.log(stdout);
+                        });
+                        cb(null, 'RmSetting');
+                    },
+                    function asyncLaunchArbiter(cb) {
+                        Mongod_arbiter(client, port, replSet, log, config, replSetPath);
+                        cb(null, 'LaunchArbiter');
+                    }
+                ], function done(error, results) {
+                });
+            } else {
+                Mongod_replSet(client, port, replSet, log, config, replSetPath);
+            }
+            cb(null, 'LaunchMongo');
+        }
+    ], function done(error, results) {
+    });
 }
