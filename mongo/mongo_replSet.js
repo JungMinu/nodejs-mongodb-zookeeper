@@ -13,22 +13,23 @@ function exists(client, replSet, zkroot_shard_path) {
                 console.log('Failed to check existence of node: %s due to: %s.', zkroot_shard_path, error);     
                 return;
             }
+            var path = zkroot_shard_path + "/" + replSet;
 
             if(stat) {
-                replication(client, replSet, zkroot_shard_path);
+                replication(client, path);
             } else {
                 shard(client, zkroot_shard_path);
-                replication(client, replSet, zkroot_shard_path);
+                replication(client, path);
             }
             return;
         }
     );
 }
 
-function replication(client, replSet, zkroot_shard_path) {
-    client.create(zkroot_shard_path + "/" + replSet, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
-        if (err) {
-            console.log('Failed to create node : %s due to %s', path);
+function replication(client, path) {
+    client.create(path, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (error) {
+        if (error) {
+            console.log('Failed to create node : %s due to %s', path, error);
         } else {
             console.log('Node : %s is successfully created', path);
         }
@@ -36,11 +37,11 @@ function replication(client, replSet, zkroot_shard_path) {
 }
 
 function shard(client, zkroot_shard_path) {
-    client.create(zkroot_shard_path, new Buffer(''), function(err, path) {
-        if (err) {
-            console.log('Failed to create node : %s due to %s', shard, err);
+    client.create(zkroot_shard_path, new Buffer(''), function(error) {
+        if (error) {
+            console.log('Failed to create node : %s due to %s', zkroot_shard_path, error);
         } else {
-            console.log('Node : %s is successfully created', shard);
+            console.log('Node : %s is successfully created', zkroot_shard_path);
         }
     });
 }
