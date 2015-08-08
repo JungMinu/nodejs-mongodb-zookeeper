@@ -46,14 +46,14 @@ function shard(client, zkroot_shard_path) {
     });
 }
 
-function Mongod_replSet(client, port, replSet, log, config, replSetPath) {
+function Mongod_replSet(client, port, log, config, replSetPath) {
     exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --oplogSize " + config.OpLogSize + " --logpath " + log, function(error, stdout, stderr) {
         console.log(stdout);
         client.close();
     });
 }
 
-function Mongod_arbiter(client, port, replSet, log, config, replSetPath) {
+function Mongod_arbiter(client, port, log, config, replSetPath) {
     exec("mongod --port " + port + " --dbpath " + replSetPath + " --replSet " + config.MongoReplSetName + " --smallfiles --noprealloc --nojournal --logpath " + log, function(error, stdout, stderr) {
         console.log(stdout);
         client.close();
@@ -88,13 +88,13 @@ exports.start = function(port, replSet, log, config, replSetPath) {
                         cb(null, 'RmSetting');
                     },
                     function asyncLaunchArbiter(cb) {
-                        Mongod_arbiter(client, port, replSet, log, config, replSetPath);
+                        Mongod_arbiter(client, port, log, config, replSetPath);
                         cb(null, 'LaunchArbiter');
                     }
                 ], function done(error, results) {
                 });
             } else {
-                Mongod_replSet(client, port, replSet, log, config, replSetPath);
+                Mongod_replSet(client, port, log, config, replSetPath);
             }
             cb(null, 'LaunchMongo');
         }
