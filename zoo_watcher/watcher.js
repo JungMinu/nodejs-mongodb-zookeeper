@@ -33,7 +33,7 @@ function listChildren(client, config, zkroot_shard_path) {
             tick.stop();
 
             var myTimer = t.timers.TIMER;
-            console.log("It took: " + myTimer.duration() + ns);
+            console.log("It took: " + myTimer.duration() + "ns");
 		},
         // 실질적으로 죽은 mongod를 감지하고 살리는 function
         // 주의 할 점은 이벤트를 감지할 때 실행되는 함수가 아니라 client.getchildren이 수행되자 마자 실행 된다.
