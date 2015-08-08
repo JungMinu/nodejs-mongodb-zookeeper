@@ -59,3 +59,13 @@ Please execute commands as follows.
 ```
 sudo node app.js
 ```
+
+<br>
+ps
+-
+If you stop app.js with ^C then please connect to zkCli and checkout with 'ls /shard1' command before restarting app.js
+
+
+If you aren't sure to check the /shard1 znode's child znodes are exists, you may encounter error.
+
+If you find '/shard1' znode's child znodes, please remove that child znodes with 'rmr /shard1/'child znode's name'.
