@@ -82,7 +82,7 @@ exports.start = function(port, replSet, log, config, replSetPath) {
             if (replSet == config.arbiterName) {
                 async.series([
                     function asyncRmSetting(cb) {
-                        exec("sudo rm /data/db/replSet_Arbiter/*", function(err, stdout, stderr) {
+                        exec("sudo rm " + config.arbiterPath + "*", function(err, stdout, stderr) {
                             console.log(stdout);
                         });
                         cb(null, 'RmSetting');
