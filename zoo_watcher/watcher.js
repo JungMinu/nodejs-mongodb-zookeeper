@@ -18,10 +18,18 @@ function listChildren(client, config, zkroot_shard_path) {
 
 	client.getChildren(
 		zkroot_shard_path,
+        // 해당 zkroot_shard_path(/shard1)의 내용이 변경될 경우에 function (event)가 실행된다.
 		function (event) {
 			console.log('Got watcher event: %s', event);
+            // 변경 된 것을 감지하면 죽은 mongod를 되살리게 된다.
+            // 하지만 zookeeper는 watcher가 해당 이벤트를 감지하면 사라지게 되는 구조이므로
+            // 아래와 같이 다시 watcher를 걸어줘야 한다. 무한루프는 일어나지 않는다.
             listChildren(client, config, zkroot_shard_path);
 		},
+        // 실질적으로 죽은 mongod를 감지하고 살리는 function
+        // 주의 할 점은 이벤트를 감지할 때 실행되는 함수가 아니라 client.getchildren이 수행되자 마자 실행 된다.
+        // 즉, Ephemeral Node가 죽었을 경우 실행되는 것이 아니라 곧바로 실행되는 함수인 것이다.
+        // 실행 순서 : function(error, children, stat) -> wathcer가 이벤트 감지 -> function(event) -> listChildren 재실행
 		function (error, children, stat) {
 			if (error) {
 				console.log('Failed to list children of : %s.', error);
@@ -33,6 +41,7 @@ function listChildren(client, config, zkroot_shard_path) {
 			var zoo_shard1_replSet3 = children.indexOf(replSet3Name);
 			var zoo_shard1_Arbiter = children.indexOf(ArbiterName);
 
+            // 죽은 mongod를 확인하고 해당 mongod를 되살린다.
             async.series([
                 function asyncReplSet1Recover(cb) {
                     IfRmZooChild_ThenRecover(zoo_shard1_replSet1, replSet1Port, replSet1Name, config.replSet1Log, config, config.replSet1Path);
@@ -56,6 +65,7 @@ function listChildren(client, config, zkroot_shard_path) {
 	);
 }
 
+// 만약 zkroot_shard_path(/shard1)의 해당 Ephemeral 자식 Node가 죽었다면 되살리고 해당 mongod를 실행한다.
 function IfRmZooChild_ThenRecover(zkShard1_child, childPort, childName, childLog, config, childPath) {
     if (zkShard1_child == -1) {
         RecoverMongo (childPort, childName, childLog, config, childPath);
@@ -63,10 +73,12 @@ function IfRmZooChild_ThenRecover(zkShard1_child, childPort, childName, childLog
     }
 }
 
+// 해당 mongod를 되살린다.
 function RecoverMongo (port, mongo, log, config, replSetPath) {
     replSet.start(port, mongo, log, config, replSetPath);
 }     
 
+// Watcher 로직을 실행한다.
 function WatchAndRecover(client, config, zkroot_shard_path) {
 	listChildren(client, config, zkroot_shard_path)
 }

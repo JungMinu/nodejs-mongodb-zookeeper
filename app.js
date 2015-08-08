@@ -5,6 +5,7 @@ var config = gk.config;
 var replSet = gk.replSet;
 var watcher = gk.watcher;
 
+// replica set mongod 실행...
 async.series([    
     function asyncMongoStart1(cb) {
         replSet.start(config.replSet1Port, config.replSet1Name, config.replSet1Log, config, config.replSet1Path);
@@ -25,6 +26,7 @@ async.series([
 ], function done(error, results) {
     console.log('error: ', error);
     console.log('mongod start: ', results);
+    // 몽고가 모두 실행된 후에 watcher를 부름
     watcher.start(config);
     console.log('Watcher Start');
 });
