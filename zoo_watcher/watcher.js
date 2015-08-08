@@ -2,6 +2,7 @@ var async = require('async');
 var sys = require('sys');
 var exec = require('child_process').exec;
 var zookeeper = require('node-zookeeper-client');
+var t = require('exectimer');
 
 var replSet = require('./../mongo/mongo_replSet');
 
@@ -23,8 +24,16 @@ function listChildren(client, config, zkroot_shard_path) {
 			console.log('Got watcher event: %s', event);
             // 변경 된 것을 감지하면 죽은 mongod를 되살리게 된다.
             // 하지만 zookeeper는 watcher가 해당 이벤트를 감지하면 사라지게 되는 구조이므로
-            // 아래와 같이 다시 watcher를 걸어줘야 한다. 무한루프는 일어나지 않는다.
+            // 아래와 같이 다시 watcher를 걸어줘야 한다.(listChildren을 다시 호출해야 한다.) 무한루프는 일어나지 않는다.
+            // 죽은 몽고를 되살리는데 시간이 얼마나 걸리는지 ns 단위로 출력한다.
+            var tick = new t.Tick("TIMER");
+
+            tick.start();
             listChildren(client, config, zkroot_shard_path);
+            tick.stop();
+
+            var myTimer = t.timers.TIMER;
+            console.log("It took: " + myTimer.duration() + ns);
 		},
         // 실질적으로 죽은 mongod를 감지하고 살리는 function
         // 주의 할 점은 이벤트를 감지할 때 실행되는 함수가 아니라 client.getchildren이 수행되자 마자 실행 된다.
