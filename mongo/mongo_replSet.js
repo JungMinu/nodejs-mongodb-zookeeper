@@ -77,7 +77,7 @@ exports.start = function(port, replSet, log, config, replSetPath) {
 	client.connect();
 
     async.series([
-        // 만약 로그 파일이 이미 존재 하다면 에러가 발생할 수 있음.
+        // 만약 로그 파일이 이미 존재 한다면 에러가 발생할 수 있음.
         // 따라서, 에러가 발생하지 않도록 해당 로그 파일을 "로그이름.log.현재날짜+시간"으로 mv
         function asyncMvLog(cb) {
             exec("sudo mv " + MongoLogPath + log + " " + MongoLogPath + log + "." + new Date(), function(err, stdout, stderr) {
