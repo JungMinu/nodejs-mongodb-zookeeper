@@ -1,28 +1,54 @@
 {
-    "MongoReplSetName": "Mongo_study",
-    "MongoLogPath": "/data/db/replSet_Log/",
-    "OpLogSize": "128",
+    "MongoConfig": {
+        "name": "Mongo_study",
+        "logpath": "/data/db/replSet_Log/",
+        "OpLogSize": "128"
+    },
 
-    "replSet1Port": "20000",
-    "replSet2Port": "30000",
-    "replSet3Port": "40000",
-    "arbiterPort": "20017",
+    "replSetArray": [
+    	{
+    		"port": "20000",
+    		"name": "replSet1",
+    		"log": "mongo_replSet1.log",
+    		"path": "/data/db/replSet1/"
+    	},
+    	{
+    		"port": "30000",
+    		"name": "replSet2",
+    		"log": "mongo_replSet2.log",
+    		"path": "/data/db/replSet2/"
+    	},
+    	{
+    		"port": "40000",
+    		"name": "replSet3",
+    		"log": "mongo_replSet3.log",
+    		"path": "/data/db/replSet3/"
+    	},
+        {
+            "port": "20017",
+            "name": "Arbiter",
+            "log": "mongo-replSet_Arbiter.log",
+            "path": "/data/db/replSet_Arbiter/"
+        }
+    ],
 
-    "replSet1Name": "replSet1",
-    "replSet2Name": "replSet2",
-    "replSet3Name": "replSet3",
-    "arbiterName": "Arbiter",
+    "zkConfig": {
+        "RootPath": "/shard1",
+        "IsLocal": true
+    },
 
-    "replSet1Log": "mongo_replSet1.log",
-    "replSet2Log": "mongo_replSet2.log",
-    "replSet3Log": "mongo_replSet3.log",
-    "arbiterLog": "mongo-replSet_Arbiter.log",
-
-    "replSet1Path": "/data/db/replSet1/",
-    "replSet2Path": "/data/db/replSet2/",
-    "replSet3Path": "/data/db/replSet3/",
-    "arbiterPath": "/data/db/replSet_Arbiter/",
-
-    "zkServer": "localhost:2181",
-    "zkRootShardPath": "/shard1"
+    "zkArray": [
+    	{
+    		"host": "localhost:2181",
+    		"path": "./zoo/zoo_cluster/zookeeper1/zookeeper-3.4.6/bin/"
+    	},
+    	{
+    		"host": "localhost:2182",
+    		"path": "./zoo/zoo_cluster/zookeeper2/zookeeper-3.4.6/bin/"
+    	},
+    	{
+    		"host": "localhost:2183",
+    		"path": "./zoo/zoo_cluster/zookeeper3/zookeeper-3.4.6/bin/"
+    	}
+    ]
 }
