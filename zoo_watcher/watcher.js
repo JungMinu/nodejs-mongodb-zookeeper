@@ -46,20 +46,18 @@ function listChildren(client, replSetArray, MongoConfig, zkRootPath, zkHost) {
             }
 
             // 죽은 mongod를 확인하고 해당 mongod를 되살린다.
-            IfRmZooChild_ThenRecover(zkChildSet, replSetArray, MongoConfig, zkRootPath, zkHost);
+            for (var i = 0; i < replSetNum; i++) {
+                IfRmZooChild_ThenRecover(zkChildSet[i], replSetArray[i], replSetName[replSetNum-1], MongoConfig, zkRootPath, zkHost);
+            }
 		}
 	);
 }
 
 // 만약 zkroot_shard_path(/shard1)의 해당 Ephemeral 자식 Node가 죽었다면 되살리고 해당 mongod를 실행한다.
-function IfRmZooChild_ThenRecover(zkChildSet, replSetArray, MongoConfig, zkRootPath, zkHost) {
-    var replSetNum = replSetArray.length;
-    for (var i = 0; i < replSetNum; i++) {
-        if (zkChildSet[i] == -1) {
-            var replSet = replSetArray[i];
-            RecoverMongo(replSet, replSetArray[replSetNum-1].name, MongoConfig, zkHost, zkRootPath);
-            console.log("Restart mongod " + replSet.name + "... port: " + replSet.port);
-        }
+function IfRmZooChild_ThenRecover(zkChild, replSet, ArbiterName, MongoConfig, zkRootPath, zkHost) {
+    if (zkChild == -1) {
+        RecoverMongo(replSet, ArbiterName, MongoConfig, zkHost, zkRootPath);
+        console.log("Restart mongod " + replSet.name + "... port: " + replSet.port);
     }
 }
 
