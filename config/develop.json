@@ -1,40 +1,43 @@
 {
     "MongoConfig": {
-        "name": "Mongo_study",
+        "rsName": "Mongo_study",
         "logpath": "/data/db/replSet_Log/",
         "OpLogSize": "128"
     },
 
-    "replSetArray": [
+    "rsArray": [
     	{
     		"port": "20000",
     		"name": "replSet1",
     		"log": "mongo_replSet1.log",
-    		"path": "/data/db/replSet1/"
+    		"path": "/data/db/replSet1/",
+            "mongod": "mongod --port 20000 --dbpath /data/db/replSet1/ --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo_replSet1.log"
     	},
     	{
     		"port": "30000",
     		"name": "replSet2",
     		"log": "mongo_replSet2.log",
-    		"path": "/data/db/replSet2/"
+    		"path": "/data/db/replSet2/",
+            "mongod": "mongod --port 30000 --dbpath /data/db/replSet2/ --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongoreplSet2.log"
     	},
     	{
     		"port": "40000",
     		"name": "replSet3",
     		"log": "mongo_replSet3.log",
-    		"path": "/data/db/replSet3/"
+    		"path": "/data/db/replSet3/",
+            "mongod": "mongod --port 40000 --dbpath /data/db/replSet3/ --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongoreplSet3.log"
     	},
         {
             "port": "20017",
             "name": "Arbiter",
             "log": "mongo-replSet_Arbiter.log",
-            "path": "/data/db/replSet_Arbiter/"
+            "path": "/data/db/replSet_Arbiter/",
+            "mongod": "mongod --port 20017 --dbpath /data/db/replSet_Arbiter/ --replSet Mongo_study --smallfiles --oplogSize 128 --logpath /data/db/replSet_Log/mongo-replSet_Arbiter.log"
         }
     ],
 
     "zkConfig": {
-        "RootPath": "/shard1",
-        "IsLocal": true
+        "RsPath": "/rs1"
     },
 
     "zkArray": [

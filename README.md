@@ -57,5 +57,5 @@ Now, you complete all setup. Enjoy mongodb-zookeeper
 Please execute commands as follows.
 
 ```
-sudo node app.js
+sudo node Initializer.js
 ```
