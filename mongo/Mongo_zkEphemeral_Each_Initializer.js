@@ -8,7 +8,7 @@ var Mongod_And_CreateZkEphemeral = new EventEmitter();
 var Mongod = new EventEmitter();
 
 // zkServer에 zkRs_path(/rs1)가 있는지 확인
-function exists(zkClient, rsName, zkRsPath) {	
+function exists(zkClient, rsName, rsPort, zkRsPath) {
   zkClient.exists(zkRsPath,
 		function (event) {
 		},
@@ -21,7 +21,7 @@ function exists(zkClient, rsName, zkRsPath) {
 
             // 만약 zkRs_path가 있다면 바로 Ephemeral Node 생성
             if(stat) {
-                replication(zkClient, path);
+                replication(zkClient, rsPort, path);
             } else {    // 만약 zkRs_path가 없다면 생성 후 Ephemeral Node 생성
                 async.series([
                     function asyncCreateZkRsPath(cb) {
@@ -29,7 +29,7 @@ function exists(zkClient, rsName, zkRsPath) {
                         cb(null, 'asyncCreateZkRsPath');
                     },
                     function asyncreplication(cb) {
-                        replication(zkClient, path);
+                        replication(zkClient, rsPort, path);
                         cb(null, 'asyncreplication');
                     }
                 ], function done(error, results) {
@@ -41,8 +41,8 @@ function exists(zkClient, rsName, zkRsPath) {
 }
 
 // 해당 mongod의 Ephemeral Node 생성
-function replication(zkClient, path) {
-    zkClient.create(path, new Buffer(''), zookeeper.CreateMode.EPHEMERAL, function (error) {
+function replication(zkClient, rsPort, path) {
+    zkClient.create(path, new Buffer(rsPort), zookeeper.CreateMode.EPHEMERAL, function (error) {
         if (error) {
             console.log('Failed to create node : %s due to %s', path, error);
         } else {
@@ -100,7 +100,7 @@ Mongod_And_CreateZkEphemeral.on('start', function(rsName, rsPort, mongod, zkHost
         },
         function asyncCreateZkEphemeral(cb) {
 	        zkClient.once('connected', function () {
-                exists(zkClient, rsName, zkRsPath);
+                exists(zkClient, rsName, rsPort, zkRsPath);
 	        });
             
             zkClient.connect();
