@@ -19,7 +19,7 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
 
             // 만약 zkRsPath가 있다면 바로 Ephemeral Node 생성
             if(stat) {
-                replication(zkClient, rsPort, path);
+                Create_Ephemeral(zkClient, rsPort, path);
             } else {    // 만약 zkRsPath가 없다면 생성 후 Ephemeral Node 생성
                 async.series([
                     function asyncCreateZkRsPath(cb) {
@@ -27,7 +27,7 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
                         cb(null, 'asyncCreateZkRsPath');
                     },
                     function asyncreplication(cb) {
-                        replication(zkClient, rsPort, path);
+                        Create_Ephemeral(zkClient, rsPort, path);
                         cb(null, 'asyncreplication');
                     }
                 ], function done(error, results) {
@@ -39,7 +39,50 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
 }
 
 // 해당 mongod의 해당 Ephemeral Node 생성
-function replication(zkClient, rsPort, path) {
+function Create_Ephemeral(zkClient, rsPort, path) {
+    zkClient.exists(path,
+        function (error, stat) {
+            if (error) {
+                console.log('Failed to check existence of node: %s due to: %s.', path, error);
+                return;
+            }
+
+            // 해당 mongod에 해당되는 Ephemeral Node가 zkServer에 존재하지 않을 경우
+            if(!stat) {
+                zkClient.create(path, new Buffer(rsPort), zookeeper.CreateMode.EPHEMERAL, function (error) {
+                    if (error) {
+                        console.log('Failed to create node : %s due to %s', path, error);
+                    } else {
+                        console.log('Node : %s is successfully created', path);
+                    }
+                });
+            }
+            // 해당 monogod에 해당되는 Ephemeral Node가 zkServer에 존재하는 경우는 아래와 같다.
+            // 해당 mongod가 실행되거나 죽었다가 다시 실행되는 경우에만 Ephemeral Node가 생성되므로
+            // node가 죽었다가 다시 살아난 경우만 해당 됨.
+            // 따라서 node가 죽기 전 주키퍼 클라이언트(zkClient)의 커넥션이 아직 살아 있는 경우이므로
+            // 일정 시간이 지나면 기존의 Ephemeral Node는 삭제됨.
+            // 즉, NODE_DELETED 이벤트를 기다렸다가 해당 Ephemeral Node를 생성해야 함.
+            else {
+                zkClient.exists(path,
+                    function(event) {
+                        if(event.type == zookeeper.Event.NODE_DELETED)
+                            If_Ephemeral_Deleted_Then_Create(zkClient, rsPort, path);
+                    },
+                    function(error, stat) {
+                        if (error) {
+                            console.log('Failed to check existence of node: %s due to: %s.', path, error);
+                            return;
+                        }
+                    }
+                );
+            }
+        }
+    );  // zkClient.exists
+}
+
+// 기존 zkClient와 connection이 끊겨 해당 Ephemeral Node가 삭제되면 다시 생성한다.
+function If_Ephemeral_Deleted_Then_Create(zkClient, rsPort, path) {
     zkClient.create(path, new Buffer(rsPort), zookeeper.CreateMode.EPHEMERAL, function (error) {
         if (error) {
             console.log('Failed to create node : %s due to %s', path, error);

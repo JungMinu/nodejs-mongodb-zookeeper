@@ -39,6 +39,7 @@ function If_RsIsOk_Then_RsStatStore(zkClient, rsPort, znode, zkRsPath) {
                 });
             }
             // rs 멤버가 셋 미만으로 살아있다면 mongo 서버는 항상 장애(primary1, secondary2, arbiter1 기준).
+            // 따라서 mongo가 장애가 있다고 판단되므로 에러사항 저장({"ok": -1}).
             else {
                 zkClient.setData(zkRsPath, new Buffer('{\"ok\": -1}'), -1, function(error, stat) {
                     if(error) {
@@ -152,10 +153,13 @@ function If_Changed_Znode_Then_StoreRsStat(zkClient, rsPort, znode, zkRsPath, is
         }
 
         // 만약 와쳐를 걸어 둔 Node가 존재하고(stat) 'NODE_CREATED' event.type이었다면(isStatStore)
+        // 몽고가 죽었다가 살아난 경우일 수 있으므로 rs의 상태를 받아와 갱신한다.
         if(stat && isStatStore) {
             var MongoClient = require('mongodb').MongoClient;
             MongoClient.connect('mongodb://localhost:' + rsPort, function(err, db) {
+                // 만약 몽고 서버에 정상적으로 connection이 되지 않는다면
                 if (db == null) {
+                    // rs의 상태를 보고 장애여부가 없다면 rs 상태정보를 다시 갱신하려 시도한다.
                     If_RsIsOk_Then_RsStatStore(zkClient, rsPort, znode, zkRsPath);
                 } else {
                     var rsStats = db.admin().s.topology.isMasterDoc;

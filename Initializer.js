@@ -3,7 +3,7 @@ var exec = require('child_process').exec;
 
 var gk = require("./common");
 var config = gk.config;
-var rsLauncher = gk.replSet;
+var rsLauncher = gk.rsLauncher;
 var watcher = gk.watcher;
 
 var MongoConfig = config.MongoConfig;
@@ -21,37 +21,15 @@ for (var i = 1; i < zkArray.length; i++) {
 
 var EventEmitter = require('events').EventEmitter;
 var zkServerStart = new EventEmitter();
-var zkServerStop = new EventEmitter();
 var MongoStart = new EventEmitter();
-
-// zkServer Cluster를 모두 Stop 시킴
-zkServerStop.on('start', function() {
-    for (var i = 0; i < QuorumNum; i++) {
-        exec("sudo " + zkArray[i].path + "zkServer.sh stop", function(error, stdout, stderr) {
-            console.log(stdout);
-        });
-    }
-});
 
 // zkServer Cluster 실행
 zkServerStart.on('start', function() {
-    async.series([
-        function asyncZkServerStop(cb) {
-            zkServerStop.emit('start');
-            cb(null, "zkServer stop");
-        },
-        function asyncZkServerStart(cb) {
-            for (var i = 0; i < QuorumNum; i++) {
-                exec("sudo " + zkArray[i].path + "zkServer.sh start", function(error, stdout, stderr) {
-                    console.log(stdout);
-                });
-            }
-            cb(null, "zkServer start");
-        }
-    ], function done(error, results) {
-        console.log("zkServer Error: " + error);
-        console.log("zkServer Launcher: " + results);
-    });
+    for (var i = 0; i < QuorumNum; i++) {
+        exec("sudo " + zkArray[i].path + "zkServer.sh start", function(error, stdout, stderr) {
+            console.log(stdout);
+        });
+    }
 });
 
 // ./config/develop.json 에서 지정한 rs member들을 실행 및 해당 Ephemeral Node를 zk Cluster server에 생성
