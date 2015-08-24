@@ -7,11 +7,9 @@ var EventEmitter = require('events').EventEmitter;
 var Mongod_And_CreateZkEphemeral = new EventEmitter();
 var Mongod = new EventEmitter();
 
-// zkServer에 zkRs_path(/rs1)가 있는지 확인
+// zkServer에 zkRsPath(/rs1)가 있는지 확인
 function exists(zkClient, rsName, rsPort, zkRsPath) {
   zkClient.exists(zkRsPath,
-		function (event) {
-		},
 		function (error, stat) {
             if (error) {
                 console.log('Failed to check existence of node: %s due to: %s.', zkRsPath, error);
@@ -19,10 +17,10 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
             }
             var path = zkRsPath + "/" + rsName;
 
-            // 만약 zkRs_path가 있다면 바로 Ephemeral Node 생성
+            // 만약 zkRsPath가 있다면 바로 Ephemeral Node 생성
             if(stat) {
                 replication(zkClient, rsPort, path);
-            } else {    // 만약 zkRs_path가 없다면 생성 후 Ephemeral Node 생성
+            } else {    // 만약 zkRsPath가 없다면 생성 후 Ephemeral Node 생성
                 async.series([
                     function asyncCreateZkRsPath(cb) {
                         CreateZkRsPath(zkClient, zkRsPath);
@@ -40,7 +38,7 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
     );
 }
 
-// 해당 mongod의 Ephemeral Node 생성
+// 해당 mongod의 해당 Ephemeral Node 생성
 function replication(zkClient, rsPort, path) {
     zkClient.create(path, new Buffer(rsPort), zookeeper.CreateMode.EPHEMERAL, function (error) {
         if (error) {
@@ -51,7 +49,7 @@ function replication(zkClient, rsPort, path) {
     });
 }
 
-// zkRs_path(/rs1) 생성
+// zkRsPath(/rs1) 생성
 function CreateZkRsPath(zkClient, zkRsPath) {
     zkClient.create(zkRsPath, new Buffer(''), function(error) {
         if (error) {
@@ -77,14 +75,14 @@ Mongod.on('start', function(zkClient, rsName, rsPort, mongod, zkHost, zkRsPath) 
         console.log(rsName + " is dead... port: " + rsPort);
         console.log("zk znode \'" + path + "\' is deleted");
 
-        // 다시 몽고를 살리고 해당 Ephemeral Node를 생성한다.
+        // 다시 몽고를 살리고 해당 Ephemeral Node를 생성.
         Mongod_And_CreateZkEphemeral.emit('start', rsName, rsPort, mongod, zkHost, zkRsPath);
         console.log("Restart mongod " + rsName + "... port: " + rsPort);
 
         tick.stop();
         var myTimer = t.timers.TIMER;
 
-        // 몽고를 다시 살리는데 걸린 시간을 대략적으로 출력한다.
+        // 몽고를 다시 살리는데 걸린 시간을 대략적으로 출력.
         console.log("It took: " + myTimer.duration() + "ns");
     });
 });

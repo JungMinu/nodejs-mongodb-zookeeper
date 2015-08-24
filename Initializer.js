@@ -21,16 +21,23 @@ for (var i = 1; i < zkArray.length; i++) {
 
 var EventEmitter = require('events').EventEmitter;
 var zkServerStart = new EventEmitter();
+var zkServerStop = new EventEmitter();
 var MongoStart = new EventEmitter();
 
+// zkServer Cluster를 모두 Stop 시킴
+zkServerStop.on('start', function() {
+    for (var i = 0; i < QuorumNum; i++) {
+        exec("sudo " + zkArray[i].path + "zkServer.sh stop", function(error, stdout, stderr) {
+            console.log(stdout);
+        });
+    }
+});
+
+// zkServer Cluster 실행
 zkServerStart.on('start', function() {
     async.series([
         function asyncZkServerStop(cb) {
-            for (var i = 0; i < QuorumNum; i++) {
-                exec("sudo " + zkArray[i].path + "zkServer.sh stop", function(error, stdout, stderr) {
-                    console.log(stdout);
-                });
-            }
+            zkServerStop.emit('start');
             cb(null, "zkServer stop");
         },
         function asyncZkServerStart(cb) {
@@ -47,6 +54,7 @@ zkServerStart.on('start', function() {
     });
 });
 
+// ./config/develop.json 에서 지정한 rs member들을 실행 및 해당 Ephemeral Node를 zk Cluster server에 생성
 MongoStart.on('start', function() {
     var replSetNum = rsArray.length;
     var ArbiterName = rsArray[replSetNum-1].name;
@@ -56,7 +64,7 @@ MongoStart.on('start', function() {
     }
 });
 
-// Zookeeper server, replica set mongod 실행
+// Zookeeper cluster server, replica set mongod 실행
 async.series([    
     function asyncZkServerStart(cb) {
         zkServerStart.emit('start');
