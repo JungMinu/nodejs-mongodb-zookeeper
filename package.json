@@ -1,10 +1,14 @@
 {
   "name" : "nodejs-mongodb-zookeeper",
   "version" : "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swmaestro6th-crashreport/nodejs-mongodb-zookeeper"
+  },
   "dependencies" : {
     "node-zookeeper-client" : "*",
     "async" : "*",
     "exectimer" : "*"
-  }
-
+  },
+  "author": "Gye Yeon Lee"
 }
