@@ -77,7 +77,7 @@ zkCluster3: ./zoo/zoo_cluster/zookeeper3/zookeeper-3.4.6/conf/zoo.cfg
 ```
 <br>
 각 주키퍼 서버가 실행이 되면 해당 서버의 pid 정보 및 로그와 스냅샷이 ```./zoo/zoo_cluster/zookeeper?_data``` 디렉토리 내에 저장이 되도록 ```zoo.cfg```파일을 작성 했습니다.<br>
-pid 정보는 해당 주키퍼 서버가 실행이 되면 ```zookeeper?_data``` 디렉토리 안에 ```zookeeper__server.pid``` 파일로 저장이 됩니다.<br>
+pid 정보는 해당 주키퍼 서버가 실행이 되면 ```zookeeper?_data``` 디렉토리 안에 ```zookeeper_server.pid``` 파일로 저장이 됩니다.<br>
 
 ```
 주키퍼 log, snapshot 경로
