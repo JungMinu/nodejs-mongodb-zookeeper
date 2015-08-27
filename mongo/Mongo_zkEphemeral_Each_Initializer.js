@@ -19,7 +19,7 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
 
             // 만약 zkRsPath가 있다면 바로 Ephemeral Node 생성
             if(stat) {
-                Create_Ephemeral(zkClient, rsPort, path);
+                CreateEphemeral(zkClient, rsPort, path);
             } else {    // 만약 zkRsPath가 없다면 생성 후 Ephemeral Node 생성
                 async.series([
                     function asyncCreateZkRsPath(cb) {
@@ -27,7 +27,7 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
                         cb(null, 'asyncCreateZkRsPath');
                     },
                     function asyncreplication(cb) {
-                        Create_Ephemeral(zkClient, rsPort, path);
+                        CreateEphemeral(zkClient, rsPort, path);
                         cb(null, 'asyncreplication');
                     }
                 ], function done(error, results) {
@@ -39,7 +39,7 @@ function exists(zkClient, rsName, rsPort, zkRsPath) {
 }
 
 // 해당 mongod의 해당 Ephemeral Node 생성
-function Create_Ephemeral(zkClient, rsPort, path) {
+function CreateEphemeral(zkClient, rsPort, path) {
     zkClient.exists(path,
         function (error, stat) {
             if (error) {

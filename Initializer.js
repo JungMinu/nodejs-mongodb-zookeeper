@@ -4,7 +4,8 @@ var exec = require('child_process').exec;
 var gk = require("./common");
 var config = gk.config;
 var rsLauncher = gk.rsLauncher;
-var watcher = gk.watcher;
+var rsStateWatcher = gk.rsStateWatcher.rsStateWatcher;
+var rsStateEventHandler = gk.rsStateWatcher.EventHandler;
 
 var MongoConfig = config.MongoConfig;
 var rsArray = config.rsArray;
@@ -56,6 +57,6 @@ async.series([
     console.log('error: ', error);
     console.log('nodejs-mongodb-zookeeper: ', results);
     // 몽고, Zookeeper server가 모두 실행된 후에 watcher를 부름
-    watcher.start(rsArray, MongoConfig, zkRsPath, zkHost);
+    rsStateWatcher.start(rsArray, rsStateEventHandler, MongoConfig, zkRsPath, zkHost);
     console.log('Watcher Start');
 });
