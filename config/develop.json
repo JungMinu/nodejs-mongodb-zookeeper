@@ -43,15 +43,15 @@
     "zkArray": [
     	{
     		"host": "localhost:2181",
-    		"path": "./zoo/zoo_cluster/zookeeper1/zookeeper-3.4.6/bin/"
+    		"path": "./zoo_cluster/zookeeper1/zookeeper-3.4.6/bin/"
     	},
     	{
     		"host": "localhost:2182",
-    		"path": "./zoo/zoo_cluster/zookeeper2/zookeeper-3.4.6/bin/"
+    		"path": "./zoo_cluster/zookeeper2/zookeeper-3.4.6/bin/"
     	},
     	{
     		"host": "localhost:2183",
-    		"path": "./zoo/zoo_cluster/zookeeper3/zookeeper-3.4.6/bin/"
+    		"path": "./zoo_cluster/zookeeper3/zookeeper-3.4.6/bin/"
     	}
     ]
 }
