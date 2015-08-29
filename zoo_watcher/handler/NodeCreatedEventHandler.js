@@ -56,7 +56,7 @@ exports.start = function(zkClient, rsPort, znode, zkRsPath) {
             // rs의 상태를 보고 장애여부가 없다면 rs 상태정보를 다시 갱신하려 시도한다.
             IfRsIsOkThenStoreRsState(zkClient, rsPort, znode, zkRsPath);
         } else {
-            var rsStats = db.admin().s.topology.isMasterDoc;
+            var rsState = db.admin().s.topology.isMasterDoc;
             rsState = JSONtoString(rsState);
             zkClient.setData(zkRsPath, new Buffer(rsState), -1, function(error, stat) {
                 if(error) {

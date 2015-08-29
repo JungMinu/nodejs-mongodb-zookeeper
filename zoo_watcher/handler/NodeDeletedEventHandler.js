@@ -13,7 +13,7 @@ function JSONtoString(object) {
 // 만약 특정 mongod에 해당하는 Ephemeral Node가 deleted될 경우 실행.
 // rs set이 primary가 존재하는 경우 rs 상태를 zkRsPath(/rs1)에 저장.
 // primary가 존재하지 않는 경우(몽고 서버 장애) zkRsPath에 에러사항 저장({"ok": -1}).
-function IfDeletedZnodeThenChangeRsStat(zkClient, rsPort, zkRsPath) {
+function IfDeletedZnodeThenChangeRsStat(zkClient, zkRsPath) {
     zkClient.getChildren(
         zkRsPath,
         function(error, children, stat) {
@@ -70,6 +70,6 @@ function IfDeletedZnodeThenChangeRsStat(zkClient, rsPort, zkRsPath) {
         }
     );  // zkClient.getChildren
 }
-exports.start = function(zkClient, rsPort, zkRsPath) {
+exports.start = function(zkClient, zkRsPath) {
     IfDeletedZnodeThenChangeRsStat(zkClient, zkRsPath);
 }

@@ -26,7 +26,7 @@ function Dispatcher(zkClient, rsPort, NodeCreatedEventHandler, NodeDeletedEventH
         }
         // 와쳐를 걸어 둔 Node가 삭제됐다면
         else if (event.type == zookeeper.Event.NODE_DELETED) {
-            NodeDeletedEventHandler.start(zkClient, rsPort, zkRsPath);
+            NodeDeletedEventHandler.start(zkClient, zkRsPath);
         }
         // 와쳐를 걸어 둔 Node가 그 외의 이벤트 타입이라면
         else {
